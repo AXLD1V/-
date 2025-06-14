@@ -1,0 +1,286 @@
+--[[ Axl Ware 0.1V GUI - بواسطة AXL ]]--
+
+local TweenService = game:GetService("TweenService")
+local UIS = game:GetService("UserInputService")
+local gui = Instance.new("ScreenGui", game.CoreGui)
+gui.Name = "Axl_Ware_0_1V"
+gui.ResetOnSpawn = false
+
+local clickSound = Instance.new("Sound", gui)
+clickSound.SoundId = "rbxassetid://6895079853"
+clickSound.Volume = 1
+
+local main = Instance.new("Frame", gui)
+main.Size = UDim2.new(0, 480, 0, 300)
+main.Position = UDim2.new(0.5, 0, 0.5, 0)
+main.AnchorPoint = Vector2.new(0.5, 0.5)
+main.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+main.BorderSizePixel = 0
+Instance.new("UICorner", main).CornerRadius = UDim.new(0, 12)
+
+-- سحب
+local dragging, dragInput, dragStart, startPos
+local function updateDrag(input)
+    local delta = input.Position - dragStart
+    main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+end
+main.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = main.Position
+        input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then dragging = false end end)
+    end
+end)
+main.InputChanged:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then dragInput = input end end)
+UIS.InputChanged:Connect(function(input) if input == dragInput and dragging then updateDrag(input) end end)
+
+-- زر إغلاق وفتح
+local toggleBtn = Instance.new("TextButton", gui)
+toggleBtn.Size = UDim2.new(0, 40, 0, 40)
+toggleBtn.Position = UDim2.new(0, 10, 0, 10)
+toggleBtn.Text = "🔓"
+toggleBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+toggleBtn.TextColor3 = Color3.new(1, 1, 1)
+toggleBtn.Font = Enum.Font.GothamBold
+toggleBtn.TextSize = 22
+Instance.new("UICorner", toggleBtn)
+
+local isOpen = true
+toggleBtn.MouseButton1Click:Connect(function()
+    clickSound:Play()
+    isOpen = not isOpen
+    toggleBtn.Text = isOpen and "🔓" or "🔒"
+    TweenService:Create(main, TweenInfo.new(0.3), {Position = isOpen and UDim2.new(0.5, 0, 0.5, 0) or UDim2.new(0.5, 0, 1.5, 0)}):Play()
+end)
+
+-- الشريط الجانبي
+local side = Instance.new("Frame", main)
+side.Size = UDim2.new(0, 50, 1, 0)
+side.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+
+local buttonsData = {
+    {icon = "🏠", name = "home"},
+    {icon = "📜", name = "executor"},
+    {icon = "✨", name = "features"},
+    {icon = "⚠️", name = "warnings"},
+    {icon = "⚙️", name = "settings"},
+}
+local pages = {}
+
+for i, data in ipairs(buttonsData) do
+    local btn = Instance.new("TextButton", side)
+    btn.Size = UDim2.new(1, 0, 0, 50)
+    btn.Position = UDim2.new(0, 0, 0, (i - 1) * 55)
+    btn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+    btn.Text = data.icon
+    btn.Font = Enum.Font.SourceSansBold
+    btn.TextSize = 22
+    btn.TextColor3 = Color3.new(1, 1, 1)
+    Instance.new("UICorner", btn)
+
+    local page = Instance.new("Frame", main)
+    page.Size = UDim2.new(1, -50, 1, 0)
+    page.Position = UDim2.new(0, 50, 0, 0)
+    page.BackgroundTransparency = 1
+    page.Visible = i == 1
+    pages[data.name] = page
+
+    btn.MouseButton1Click:Connect(function()
+        clickSound:Play()
+        for _, p in pairs(pages) do p.Visible = false end
+        page.Visible = true
+        local t1 = TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(80, 120, 80)})
+        t1:Play()
+        t1.Completed:Wait()
+        TweenService:Create(btn, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(45, 45, 45)}):Play()
+    end)
+end
+
+-- اللغات المتاحة
+local languages = {
+    ["عربي"] = {
+        home = {
+            title = "الإصدار: 0.1V",
+            developer = "المطور: AXL",
+            status = "الحالة: Alpha"
+        },
+        executor = {
+            placeholder = "-- ألصق سكربتك هنا",
+            run = "تشغيل"
+        },
+        features = {
+            text = "✅ دعم الأندرويد والآيفون\n✅ تصميم سلس\n✅ منفذ سكربت احترافي\n✅ خفيف بدون لاج"
+        },
+        warnings = {
+            text = "⚠️ لا تستخدم السكربتات بالأماكن العامة.\n⚠️ بعضها قد يسبب باند.\n⚠️ تأكد أن السكربت آمن.\n⚠️ مسؤوليتك لوحدك."
+        },
+        settings = {
+            daymode = "☀️ الوضع النهاري",
+            nightmode = "🌙 الوضع الليلي",
+            language = "🌐 اللغة: عربي"
+        }
+    },
+    ["English"] = {
+        home = {
+            title = "Version: 0.1V",
+            developer = "Developer: AXL",
+            status = "Status: Alpha"
+        },
+        executor = {
+            placeholder = "-- Paste your script here",
+            run = "Execute"
+        },
+        features = {
+            text = "✅ Android & iOS support\n✅ Smooth design\n✅ Professional executor\n✅ Lightweight with no lag"
+        },
+        warnings = {
+            text = "⚠️ Don't use scripts in public places.\n⚠️ Some may cause bans.\n⚠️ Make sure the script is safe.\n⚠️ Your responsibility."
+        },
+        settings = {
+            daymode = "☀️ Day Mode",
+            nightmode = "🌙 Night Mode",
+            language = "🌐 Language: English"
+        }
+    }
+}
+
+local currentLang = "عربي"
+
+-- الصفحة الرئيسية
+local homeLabel = Instance.new("TextLabel", pages["home"])
+homeLabel.Size = UDim2.new(1, 0, 1, 0)
+homeLabel.BackgroundTransparency = 1
+homeLabel.Text = languages[currentLang].home.title.."\n"..languages[currentLang].home.developer.."\n"..languages[currentLang].home.status
+homeLabel.Font = Enum.Font.GothamSemibold
+homeLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+homeLabel.TextSize = 22
+homeLabel.TextWrapped = true
+
+-- منفذ السكربت
+local scriptBox = Instance.new("TextBox", pages["executor"])
+scriptBox.Size = UDim2.new(1, -20, 0.7, 0)
+scriptBox.Position = UDim2.new(0, 10, 0, 10)
+scriptBox.Font = Enum.Font.Code
+scriptBox.TextColor3 = Color3.fromRGB(0, 255, 0)
+scriptBox.TextSize = 18
+scriptBox.MultiLine = true
+scriptBox.ClearTextOnFocus = false
+scriptBox.TextWrapped = true
+scriptBox.TextYAlignment = Enum.TextYAlignment.Top
+scriptBox.Text = languages[currentLang].executor.placeholder
+scriptBox.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+
+local runButton = Instance.new("TextButton", pages["executor"])
+runButton.Size = UDim2.new(0, 120, 0, 40)
+runButton.Position = UDim2.new(1, -130, 1, -50)
+runButton.Text = languages[currentLang].executor.run
+runButton.Font = Enum.Font.GothamBold
+runButton.TextSize = 20
+runButton.BackgroundColor3 = Color3.fromRGB(30, 100, 30)
+runButton.TextColor3 = Color3.new(1,1,1)
+runButton.MouseButton1Click:Connect(function()
+    clickSound:Play()
+    local func = loadstring(scriptBox.Text)
+    if func then pcall(func) end
+end)
+
+-- المميزات
+local featuresLabel = Instance.new("TextLabel", pages["features"])
+featuresLabel.Size = UDim2.new(1, -20, 1, -20)
+featuresLabel.Position = UDim2.new(0, 10, 0, 10)
+featuresLabel.BackgroundTransparency = 1
+featuresLabel.Text = languages[currentLang].features.text
+featuresLabel.TextColor3 = Color3.new(1, 1, 1)
+featuresLabel.Font = Enum.Font.Gotham
+featuresLabel.TextSize = 20
+featuresLabel.TextWrapped = true
+featuresLabel.TextYAlignment = Enum.TextYAlignment.Top
+
+-- التحذيرات
+local warningsLabel = Instance.new("TextLabel", pages["warnings"])
+warningsLabel.Size = UDim2.new(1, -20, 1, -20)
+warningsLabel.Position = UDim2.new(0, 10, 0, 10)
+warningsLabel.BackgroundTransparency = 1
+warningsLabel.Text = languages[currentLang].warnings.text
+warningsLabel.TextColor3 = Color3.fromRGB(255, 200, 0)
+warningsLabel.Font = Enum.Font.Gotham
+warningsLabel.TextSize = 20
+warningsLabel.TextWrapped = true
+warningsLabel.TextYAlignment = Enum.TextYAlignment.Top
+
+-- صفحة الإعدادات
+local settingsFrame = Instance.new("Frame", pages["settings"])
+settingsFrame.Size = UDim2.new(1, 0, 1, 0)
+settingsFrame.BackgroundTransparency = 1
+
+-- زر الوضع النهاري/الليلي
+local isDark = true
+local modeButton = Instance.new("TextButton", settingsFrame)
+modeButton.Size = UDim2.new(0, 180, 0, 40)
+modeButton.Position = UDim2.new(0.5, -90, 0.2, 0)
+modeButton.Text = languages[currentLang].settings.nightmode
+modeButton.Font = Enum.Font.GothamBold
+modeButton.TextSize = 18
+modeButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+modeButton.TextColor3 = Color3.new(1,1,1)
+Instance.new("UICorner", modeButton)
+
+local function updateTheme()
+    if isDark then
+        -- Night mode
+        main.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+        side.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+        scriptBox.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+        homeLabel.TextColor3 = Color3.new(1, 1, 1)
+        featuresLabel.TextColor3 = Color3.new(1, 1, 1)
+        modeButton.Text = languages[currentLang].settings.nightmode
+    else
+        -- Day mode
+        main.BackgroundColor3 = Color3.fromRGB(240, 240, 240)
+        side.BackgroundColor3 = Color3.fromRGB(220, 220, 220)
+        scriptBox.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        homeLabel.TextColor3 = Color3.new(0, 0, 0)
+        featuresLabel.TextColor3 = Color3.new(0, 0, 0)
+        modeButton.Text = languages[currentLang].settings.daymode
+    end
+end
+
+modeButton.MouseButton1Click:Connect(function()
+    clickSound:Play()
+    isDark = not isDark
+    updateTheme()
+end)
+
+-- زر تغيير اللغة
+local languageButton = Instance.new("TextButton", settingsFrame)
+languageButton.Size = UDim2.new(0, 180, 0, 40)
+languageButton.Position = UDim2.new(0.5, -90, 0.4, 0)
+languageButton.Text = languages[currentLang].settings.language
+languageButton.Font = Enum.Font.GothamBold
+languageButton.TextSize = 18
+languageButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+languageButton.TextColor3 = Color3.new(1,1,1)
+Instance.new("UICorner", languageButton)
+
+languageButton.MouseButton1Click:Connect(function()
+    clickSound:Play()
+    if currentLang == "عربي" then
+        currentLang = "English"
+    else
+        currentLang = "عربي"
+    end
+    
+    -- Update all texts
+    homeLabel.Text = languages[currentLang].home.title.."\n"..languages[currentLang].home.developer.."\n"..languages[currentLang].home.status
+    scriptBox.Text = languages[currentLang].executor.placeholder
+    scriptBox.PlaceholderText = languages[currentLang].executor.placeholder
+    runButton.Text = languages[currentLang].executor.run
+    featuresLabel.Text = languages[currentLang].features.text
+    warningsLabel.Text = languages[currentLang].warnings.text
+    languageButton.Text = languages[currentLang].settings.language
+    updateTheme()
+end)
+
+-- Initialize theme
+updateTheme()
